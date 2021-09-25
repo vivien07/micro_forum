@@ -1,0 +1,57 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+
+    <article class="post">
+        <aside class="actions">
+            {% if user.is_authenticated %}
+            <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}">
+                {% include './icons/pencil-fill.svg' %}
+            </a>
+            <a class="btn btn-default" href="{% url 'post_remove' pk=post.pk %}">
+                {% include './icons/trash-fill.svg' %}
+            </a>
+            {% endif %}
+        </aside>
+        <time class="date">
+            publié le {{ post.date_creation }}
+        </time>
+        <h2>
+            {{ post.titre }}
+        </h2>
+        <p>
+            {{ post.texte|linebreaksbr }}
+        </p>
+    </article>
+
+    <hr>
+
+    <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Ajouter un commentaire</a>
+    <br>
+    {% for comment in post.commentaires.all %}
+        {% if user.is_authenticated or comment.approuve %}
+            <div class="comment">
+                <div class="date">
+                    {{ comment.date_creation }}
+                    {% if not comment.approuve %}
+                        {% if user.is_superuser %}
+                            <a class="btn btn-default" href="{% url 'comment_remove' pk=comment.pk %}">
+                                {% include './icons/eraser.svg' %}
+                            </a>
+                            <a class="btn btn-default" href="{% url 'comment_approve' pk=comment.pk %}">
+                                {% include './icons/check-circle-fill.svg' %}
+                            </a>
+                        {% else %}
+                            <p>Commentaire en attente de modération</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <strong>{{ comment.auteur }}</strong>
+                <p>{{ comment.texte|linebreaks }}</p>
+            </div>
+        {% endif %}
+    {% empty %}
+        <p>Aucun commentaires</p>
+    {% endfor %}
+
+{% endblock %}
